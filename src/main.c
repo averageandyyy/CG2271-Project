@@ -9,6 +9,7 @@ int main(void)
   initGPIO();
   initTimers();
 	moveRightSide(BACKWARD, FAST);
+	moveLeftSide(BACKWARD, FAST);
   while (1)
   {
     // stop();
