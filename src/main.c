@@ -1,15 +1,15 @@
 #include "MKL25Z4.h"
 #include "test/test.h"
 #include "motors/motor_driver.h"
+#include "labs/blinky.h"
 
 int main(void)
 {
   SystemCoreClockUpdate();
-	
-	initMotors();
-	moveLeftSide(FORWARD, SLOW);
+  initBlinkyGPIO();
+  initBlinkyTimer();
   while (1)
   {
-		stop();
+		blinky_control(color_to_show);
   }
 }
