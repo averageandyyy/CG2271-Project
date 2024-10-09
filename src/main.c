@@ -4,10 +4,12 @@
 
 int main(void)
 {
+  SystemCoreClockUpdate();
+	
+	initMotors();
+	moveLeftSide(FORWARD, SLOW);
+  while (1)
+  {
 		stop();
-    printHelloWorld();
-    while (1)
-    {
-
-    }
+  }
 }

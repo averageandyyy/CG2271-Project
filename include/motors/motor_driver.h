@@ -13,25 +13,25 @@
 #define MOTOR_DRIVER_H
 
 #include "MKL25Z4.h"
-
+#include "utils.h"
 /**
  * @brief Motor pin and channel definitions
- *
- * FRONT_RIGHT  - Connected to PTA1, uses TPM2 Channel 0
- * FRONT_LEFT   - Connected to PTC1, uses TPM0 Channel 0
- * BACK_RIGHT   - Connected to PTA2, uses TPM2 Channel 1
- * BACK_LEFT    - Connected to PTC2, uses TPM0 Channel 1
+ * Right side will use A1 and A2, corresponding to TPM2 C0 and C1
+ * Left side will use C1 and C2, correspondint to TPM0 C0 and C1
  */
-#define FRONT_RIGHT 1
-#define FRONT_LEFT 1
-#define BACK_RIGHT 2
-#define BACK_LEFT 2
+typedef enum
+{
+    STOP = 0,
+    SLOW = 25,
+    MEDIUM = 50,
+    FAST = 100
+} Speed;
 
-/** @brief Motor IDs for control purposes */
-#define FRONT_RIGHT_ID 1
-#define FRONT_LEFT_ID 2
-#define BACK_RIGHT_ID 3
-#define BACK_LEFT_ID 4
+typedef enum
+{
+    FORWARD,
+    BACKWARD
+} Direction;
 
 /** @brief Defines the PWM period for a 500 Hz signal */
 #define PWM_PERIOD 749
@@ -40,6 +40,17 @@ void initMotors(void);
 void initGPIO(void);
 void initTimers(void);
 
-void setMotorSpeed(uint8_t motor_id, uint8_t speed);
 void stop(void);
+
+void moveRightSide(Direction dir, Speed speed);
+void moveLeftSide(Direction dir, Speed speed);
+
+void moveForward(Speed speed);
+void moveBackward(Speed speed);
+void rotateLeft(Speed speed);
+void rotateRight(Speed speed);
+void curveLeft(Speed speed);
+
+void moveTest(void);
+
 #endif

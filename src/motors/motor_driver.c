@@ -25,7 +25,7 @@ void initMotors(void)
 
 /**
  * @brief Configures the GPIO pins for motor control.
- * 
+ *
  * This function enables the clocks for Ports A and C, and configures the pin
  * multiplexing to use the TPM (Timer/PWM Module) for generating PWM signals.
  */
@@ -35,20 +35,23 @@ void initGPIO(void)
     SIM->SCGC5 |= (SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTC_MASK);
 
     // Set MUX to ALT3 for TPM
-    PORTA->PCR[FRONT_RIGHT] &= ~PORT_PCR_MUX_MASK;
-    PORTA->PCR[FRONT_RIGHT] |= PORT_PCR_MUX(3);
-    PORTA->PCR[BACK_RIGHT] &= ~PORT_PCR_MUX_MASK;
-    PORTA->PCR[BACK_RIGHT] |= PORT_PCR_MUX(3);
-    PORTC->PCR[FRONT_LEFT] &= ~PORT_PCR_MUX_MASK;
-    PORTC->PCR[FRONT_LEFT] |= PORT_PCR_MUX(3);
-    PORTC->PCR[BACK_LEFT] &= ~PORT_PCR_MUX_MASK;
-    PORTC->PCR[BACK_LEFT] |= PORT_PCR_MUX(3);
+    // A1 and A2
+    PORTA->PCR[1] &= ~PORT_PCR_MUX_MASK;
+    PORTA->PCR[1] |= PORT_PCR_MUX(3);
+    PORTA->PCR[2] &= ~PORT_PCR_MUX_MASK;
+    PORTA->PCR[2] |= PORT_PCR_MUX(3);
+
+    // C1 and C2
+    PORTC->PCR[1] &= ~PORT_PCR_MUX_MASK;
+    PORTC->PCR[1] |= PORT_PCR_MUX(3);
+    PORTC->PCR[2] &= ~PORT_PCR_MUX_MASK;
+    PORTC->PCR[2] |= PORT_PCR_MUX(3);
 }
 
 /**
  * @brief Configures TPM timers for PWM generation.
- * 
- * This function sets up the TPM0 and TPM2 timers with a prescaler of 128, 
+ *
+ * This function sets up the TPM0 and TPM2 timers with a prescaler of 128,
  * configures the PWM period, and enables edge-aligned PWM on the specified channels.
  */
 void initTimers(void)
@@ -75,44 +78,13 @@ void initTimers(void)
     TPM2->SC &= ~TPM_SC_CPWMS_MASK;                                  // Up-counting
     TPM2->CONTROLS[0].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // Edge-aligned PWM on channel 0
     TPM2->CONTROLS[1].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // Edge-aligned PWM on channel 1
-}
 
-/**
- * @brief Sets the speed of the specified motor.
- * 
- * This function adjusts the PWM duty cycle to control the speed of the motor.
- * The `motor_id` corresponds to a specific motor, and `speed` sets the duty cycle
- * from 0 (stopped) to 100 (full speed).
- * 
- * @param motor_id The ID of the motor (use defined motor IDs).
- * @param speed The speed percentage (0 to 100).
- */
-void setMotorSpeed(uint8_t motor_id, uint8_t speed)
-{
-    uint16_t pwmValue = speed * PWM_PERIOD / 100;
-
-    switch (motor_id)
-    {
-    case FRONT_RIGHT_ID:
-        TPM2->CONTROLS[0].CnV = pwmValue;
-        break;
-    case FRONT_LEFT_ID:
-        TPM0->CONTROLS[0].CnV = pwmValue;
-        break;
-    case BACK_RIGHT_ID:
-        TPM2->CONTROLS[1].CnV = pwmValue;
-        break;
-    case BACK_LEFT_ID:
-        TPM0->CONTROLS[1].CnV = pwmValue;
-        break;
-    default:
-        stop();
-    }
+    stop();
 }
 
 /**
  * @brief Stops all motors.
- * 
+ *
  * This function stops all the motors by setting their PWM duty cycles to 0.
  */
 void stop(void)
@@ -121,4 +93,93 @@ void stop(void)
     TPM0->CONTROLS[1].CnV = 0;
     TPM2->CONTROLS[0].CnV = 0;
     TPM2->CONTROLS[1].CnV = 0;
+}
+
+void moveForward(Speed speed)
+{
+    moveLeftSide(FORWARD, speed);
+    moveRightSide(FORWARD, speed);
+}
+
+void moveBackward(Speed speed)
+{
+    moveLeftSide(BACKWARD, speed);
+    moveRightSide(BACKWARD, speed);
+}
+
+void rotateLeft(Speed speed)
+{
+    moveRightSide(FORWARD, speed);
+    moveLeftSide(BACKWARD, speed);
+}
+
+void rotateRight(Speed speed)
+{
+    moveRightSide(BACKWARD, speed);
+    moveLeftSide(FORWARD, speed);
+}
+
+void curveLeft(Speed speed)
+{
+    moveRightSide(FORWARD, speed);
+    moveLeftSide(FORWARD, speed / 2);
+}
+
+void curveRight(Speed speed)
+{
+    moveRightSide(FORWARD, speed / 2);
+    moveLeftSide(FORWARD, speed);
+}
+
+void moveRightSide(Direction dir, Speed speed)
+{
+    uint16_t pwmValue = speed * PWM_PERIOD / 100;
+
+    if (dir == FORWARD)
+    {
+        TPM2->CONTROLS[0].CnV = pwmValue;
+        TPM2->CONTROLS[1].CnV = 0;
+    }
+    else
+    {
+        TPM2->CONTROLS[1].CnV = pwmValue;
+        TPM2->CONTROLS[0].CnV = 0;
+    }
+}
+
+void moveLeftSide(Direction dir, Speed speed)
+{
+    uint16_t pwmValue = speed * PWM_PERIOD / 100;
+
+   if (dir == FORWARD)
+    {
+        TPM0->CONTROLS[0].CnV = pwmValue;
+        TPM0->CONTROLS[1].CnV = 0;
+    }
+    else
+    {
+        TPM0->CONTROLS[1].CnV = pwmValue;
+        TPM0->CONTROLS[0].CnV = 0;
+    }
+}
+
+void moveTest(void)
+{
+    moveForward(MEDIUM);
+    delay(DELAY_DURATION);
+    moveBackward(MEDIUM);
+    delay(DELAY_DURATION);
+
+    rotateLeft(MEDIUM);
+    delay(DELAY_DURATION);
+    rotateRight(MEDIUM);
+    delay(DELAY_DURATION);
+    rotateRight(MEDIUM);
+    delay(DELAY_DURATION);
+    rotateLeft(MEDIUM);
+
+    curveLeft(MEDIUM);
+    delay(DELAY_DURATION);
+    curveRight(MEDIUM);
+    delay(DELAY_DURATION);
 }
