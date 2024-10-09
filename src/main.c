@@ -10,8 +10,13 @@ int main(void)
   initTimers();
 	moveRightSide(BACKWARD, FAST);
 	moveLeftSide(BACKWARD, FAST);
+	delay(DELAY_DURATION);
+	moveRightSide(FORWARD, FAST);
+	moveLeftSide(FORWARD, FAST);
+	delay(DELAY_DURATION);
+	moveTest();
   while (1)
   {
-    // stop();
+    stop();
   }
 }
