@@ -9,6 +9,11 @@
  * Cheng Jia Wei Andy
  */
 
+/**
+* Current Set Up
+  Left Side will use TPM1_CH0 and TPM1_CH1 corresponding to PTE20 and PTE21 respectively
+*/
+
 #include "motors/motor_driver.h"
 
 /**
@@ -32,7 +37,8 @@ void initMotors(void)
 void initGPIO(void)
 {
     // Enable clock to Ports A and C
-    SIM->SCGC5 |= (SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTC_MASK);
+    // SIM->SCGC5 |= (SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTC_MASK);
+    SIM->SCGC5 |= SIM_SCGC5_PORTA_MASK;
 
     // Set MUX to ALT3 for TPM
     // A1 and A2
@@ -42,10 +48,10 @@ void initGPIO(void)
     PORTA->PCR[2] |= PORT_PCR_MUX(3);
 
     // C1 and C2
-    PORTC->PCR[1] &= ~PORT_PCR_MUX_MASK;
-    PORTC->PCR[1] |= PORT_PCR_MUX(3);
-    PORTC->PCR[2] &= ~PORT_PCR_MUX_MASK;
-    PORTC->PCR[2] |= PORT_PCR_MUX(3);
+    // PORTC->PCR[1] &= ~PORT_PCR_MUX_MASK;
+    // PORTC->PCR[1] |= PORT_PCR_MUX(3);
+    // PORTC->PCR[2] &= ~PORT_PCR_MUX_MASK;
+    // PORTC->PCR[2] |= PORT_PCR_MUX(3);
 }
 
 /**
@@ -57,29 +63,44 @@ void initGPIO(void)
 void initTimers(void)
 {
     // Enable clocks to TPM0 and TPM2
-    SIM->SCGC6 |= (SIM_SCGC6_TPM0_MASK | SIM_SCGC6_TPM2_MASK);
+    // SIM->SCGC6 |= (SIM_SCGC6_TPM0_MASK | SIM_SCGC6_TPM2_MASK);
+    SIM->SCGC6 |= SIM_SCGC6_TPM2_MASK;
 
     // Select internal clock source
     SIM->SOPT2 &= ~SIM_SOPT2_TPMSRC_MASK;
     SIM->SOPT2 |= SIM_SOPT2_TPMSRC(1);
 
     // Configure TPM0
-    TPM0->MOD = PWM_PERIOD;
-    TPM0->SC &= ~(TPM_SC_CMOD_MASK | TPM_SC_PS_MASK);
-    TPM0->SC |= (TPM_SC_CMOD(1) | TPM_SC_PS(7));                     // Internal clock and prescaler of 128
-    TPM0->SC &= ~TPM_SC_CPWMS_MASK;                                  // Up-counting
-    TPM0->CONTROLS[0].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // Edge-aligned PWM on channel 0
-    TPM0->CONTROLS[1].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // Edge-aligned PWM on channel 1
+    // TPM0->SC &= ~(TPM_SC_CMOD_MASK | TPM_SC_PS_MASK);
+    // TPM0->SC |= (TPM_SC_CMOD(1) | TPM_SC_PS(7));                     // Internal clock and prescaler of 128
+    // TPM0->SC &= ~TPM_SC_CPWMS_MASK;                                  // Up-counting
+    // TPM0->CONTROLS[0].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // Edge-aligned PWM on channel 0
+    // TPM0->CONTROLS[1].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // Edge-aligned PWM on channel 1
+    // TPM0->MOD = PWM_PERIOD;
 
     // Configure TPM2
     TPM2->MOD = PWM_PERIOD;
     TPM2->SC &= ~(TPM_SC_CMOD_MASK | TPM_SC_PS_MASK);
-    TPM2->SC |= (TPM_SC_CMOD(1) | TPM_SC_PS(7));                     // Internal clock and prescaler of 128
-    TPM2->SC &= ~TPM_SC_CPWMS_MASK;                                  // Up-counting
-    TPM2->CONTROLS[0].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // Edge-aligned PWM on channel 0
-    TPM2->CONTROLS[1].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // Edge-aligned PWM on channel 1
+    TPM2->SC |= (TPM_SC_CMOD(1) | TPM_SC_PS(7));
+    TPM2->SC &= ~TPM_SC_CPWMS_MASK;
 
-    stop();
+    TPM2_C0SC &= ~(TPM_CnSC_ELSB_MASK | TPM_CnSC_MSB_MASK | TPM_CnSC_ELSA_MASK | TPM_CnSC_MSA_MASK);
+    // Set to edge-aligned PWM (Clear output on match, set output on reload)
+    TPM2_C0SC |= (TPM_CnSC_MSB(1) | TPM_CnSC_ELSB(1));
+		
+		TPM2_C1SC &= ~(TPM_CnSC_ELSB_MASK | TPM_CnSC_MSB_MASK | TPM_CnSC_ELSA_MASK | TPM_CnSC_MSA_MASK);
+		TPM2_C1SC |= (TPM_CnSC_MSB(1) | TPM_CnSC_ELSB(1));
+    // TPM2->SC &= ~(TPM_SC_CMOD_MASK | TPM_SC_PS_MASK);
+    // TPM2->SC |= (TPM_SC_CMOD(1) | TPM_SC_PS(7));                     // Internal clock and prescaler of 128
+    // TPM2->SC &= ~TPM_SC_CPWMS_MASK;                                  // Up-counting
+    // TPM2->CONTROLS[0].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // Edge-aligned PWM on channel 0
+    // TPM2->CONTROLS[1].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // Edge-aligned PWM on channel 1
+    // TPM2->MOD = PWM_PERIOD;
+
+    // TPM2_C0V = 500;
+	  // TPM2_C1V = 0;
+
+    // stop();
 }
 
 /**
@@ -89,10 +110,12 @@ void initTimers(void)
  */
 void stop(void)
 {
-    TPM0->CONTROLS[0].CnV = 0;
-    TPM0->CONTROLS[1].CnV = 0;
-    TPM2->CONTROLS[0].CnV = 0;
-    TPM2->CONTROLS[1].CnV = 0;
+    // TPM0->CONTROLS[0].CnV = 0;
+    // TPM0->CONTROLS[1].CnV = 0;
+    // TPM2->CONTROLS[0].CnV = 0;
+    // TPM2->CONTROLS[1].CnV = 0;
+    TPM2_C0V = 0;
+    TPM2_C1V = 0;
 }
 
 void moveForward(Speed speed)
@@ -137,13 +160,17 @@ void moveRightSide(Direction dir, Speed speed)
 
     if (dir == FORWARD)
     {
-        TPM2->CONTROLS[0].CnV = pwmValue;
-        TPM2->CONTROLS[1].CnV = 0;
+        // TPM2->CONTROLS[0].CnV = pwmValue;
+        // TPM2->CONTROLS[1].CnV = 0;
+        TPM2_C0V = pwmValue;
+        TPM2_C1V = 0;
     }
     else
     {
-        TPM2->CONTROLS[1].CnV = pwmValue;
-        TPM2->CONTROLS[0].CnV = 0;
+        // TPM2->CONTROLS[1].CnV = pwmValue;
+        // TPM2->CONTROLS[0].CnV = 0;
+        TPM2_C1V = pwmValue;
+        TPM2_C0V = 0;
     }
 }
 
@@ -151,7 +178,7 @@ void moveLeftSide(Direction dir, Speed speed)
 {
     uint16_t pwmValue = speed * PWM_PERIOD / 100;
 
-   if (dir == FORWARD)
+    if (dir == FORWARD)
     {
         TPM0->CONTROLS[0].CnV = pwmValue;
         TPM0->CONTROLS[1].CnV = 0;

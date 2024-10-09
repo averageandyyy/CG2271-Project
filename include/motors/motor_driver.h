@@ -15,10 +15,12 @@
 #include "MKL25Z4.h"
 #include "utils.h"
 /**
- * @brief Motor pin and channel definitions
+ * Motor pin and channel definitions
  * Right side will use A1 and A2, corresponding to TPM2 C0 and C1
  * Left side will use C1 and C2, correspondint to TPM0 C0 and C1
  */
+
+
 typedef enum
 {
     STOP = 0,
