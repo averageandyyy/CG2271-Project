@@ -203,10 +203,12 @@ static void transmit_data(char *pdata, size_t size) {
     // int len = serialize(buffer, pdata, size);
     // for (int i = 0; i < len; i++) {
     while (*pdata) {
-        __disable_irq();
+        // __disable_irq();
+        NVIC_DisableIRQ(UART0_IRQn);
         Q_enqueue(&transmitQ, *pdata);
         pdata++;
-        __enable_irq();
+        // __enable_irq();
+        NVIC_EnableIRQ(UART0_IRQn);
     }
     UART0_C2 |= UART_C2_TIE_MASK;
 
