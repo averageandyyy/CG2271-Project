@@ -112,7 +112,6 @@ extern "C" {
 
 #define CLOCK_SETUP 1
 
-
 /* MCG mode constants */
 
 #define MCG_MODE_FEI                   0U

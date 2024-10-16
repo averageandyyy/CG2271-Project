@@ -398,9 +398,6 @@
               <FilePath>.\src\test\test.c</FilePath>
             </File>
             <File>
-              <FileName>blinky.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\labs\blinky.c</FilePath>
             </File>
           </Files>
         </Group>
