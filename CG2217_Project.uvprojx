@@ -388,19 +388,16 @@
               <FilePath>.\src\main.c</FilePath>
             </File>
             <File>
+              <FileName>motor_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\motors\motor_driver.c</FilePath>
+            </File>
+            <File>
               <FileName>test.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\test\test.c</FilePath>
             </File>
             <File>
-              <FileName>serialize.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\serialize\serialize.c</FilePath>
-            </File>
-            <File>
-              <FileName>cirq.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\cirq\cirq.c</FilePath>
             </File>
           </Files>
         </Group>
