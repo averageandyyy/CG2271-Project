@@ -3,9 +3,12 @@
 #include "serialize/serialize.h"
 
 #define BAUD_RATE 9600
-#define UART_TX_PORTE22 22
-#define UART_RX_PORTE23 23
+#define UART0_TX_PIN 22
+#define UART0_RX_PIN 23
 #define UART0_INT_PRIO 128
+#define UART1_RX_PIN 18
+#define UART1_TX_PIN 19
+#define UART1_INT_PRIO 128
 #define RED_LED 18    // PortB Pin 18
 #define GREEN_LED 19  // PortB Pin 19
 #define BLUE_LED 1    // PortD Pin 1
@@ -17,10 +20,11 @@ typedef enum colour {
     BLUE
 } colour_t;
 
-Q_t transmitQ, receiveQ;
+Q_t transmit0Q, receive0Q;
+Q_t transmit1Q, receive1Q;
 volatile char user_input_key; /* User input key read from serial port*/
 
-// Init UART Interrupt
+// Init UART0 Interrupt
 void initIntUART0(uint32_t baud_rate) {
     // UART0 clock gate enable
     SIM_SCGC4 |= SIM_SCGC4_UART0_MASK;
@@ -49,8 +53,8 @@ void initIntUART0(uint32_t baud_rate) {
     // enable UART0
     UART0_C2 |= UART_C2_TE_MASK | UART_C2_RE_MASK;
 
-    Q_init(&transmitQ);
-    Q_init(&receiveQ);
+    Q_init(&transmit0Q);
+    Q_init(&receive0Q);
 
     NVIC_SetPriority(UART0_IRQn, UART0_INT_PRIO);
     NVIC_ClearPendingIRQ(UART0_IRQn);
@@ -60,8 +64,43 @@ void initIntUART0(uint32_t baud_rate) {
     UART0_C2 |= UART_C2_RIE_MASK;
 }
 
+// Init UART1 Interrupt
+void initIntUART1(uint32_t baud_rate) {
+    // UART1 clock gate enable
+    SIM_SCGC4 |= SIM_SCGC4_UART1_MASK;
+
+    // configure UART1 TX/RX pins
+    SIM_SCGC5 |= SIM_SCGC5_PORTE_MASK;
+    PORTE_PCR0 = PORT_PCR_MUX(3);
+    PORTE_PCR1 = PORT_PCR_MUX(3);
+
+    // disable UART1
+    UART1_C2 &= ~(UART_C2_TE_MASK | UART_C2_RE_MASK);
+
+    uint32_t bus_clock = DEFAULT_SYSTEM_CLOCK / 2;
+    uint32_t divisor = bus_clock / (baud_rate * 16);
+    UART1_BDH = UART_BDH_SBR(divisor >> 8);
+    UART1_BDL = UART_BDL_SBR(divisor);
+
+    UART1_C1 = 0;
+    UART1_S2 = 0;
+    UART1_C3 = 0;
+
+    // enable UART1
+    UART1_C2 |= UART_C2_TE_MASK | UART_C2_RE_MASK;
+
+    Q_init(&transmit1Q);
+    Q_init(&receive1Q);
+
+    NVIC_SetPriority(UART1_IRQn, UART1_INT_PRIO);
+    NVIC_ClearPendingIRQ(UART1_IRQn);
+    NVIC_EnableIRQ(UART1_IRQn);
+
+    UART1_C2 |= UART_C2_RIE_MASK;
+}
+
 // Init RGB LED
-void initGPIO(void) {
+void initRGBGPIO(void) {
     // Enable Clock to PORTB and PORTD
     SIM->SCGC5 |= ((SIM_SCGC5_PORTB_MASK) | (SIM_SCGC5_PORTD_MASK));
 
@@ -123,19 +162,19 @@ void UART0_IRQHandler() {
     NVIC_DisableIRQ(UART0_IRQn);
     // Transmit
     if (UART0_S1 & UART_S1_TDRE_MASK) {
-        if (!Q_isEmpty(&transmitQ)) {
-            UART0_D = Q_dequeue(&transmitQ);
+        if (!Q_isEmpty(&transmit0Q)) {
+            UART0_D = Q_dequeue(&transmit0Q);
         } else {
             UART0_C2 &= ~UART_C2_TIE_MASK;  // stop transmissions
         }
     }
     // Receive
     if (UART0_S1 & UART_S1_RDRF_MASK) {
-        if (!Q_isFull(&receiveQ)) {
-            Q_enqueue(&receiveQ, UART0_D);
+        if (!Q_isFull(&receive0Q)) {
+            Q_enqueue(&receive0Q, UART0_D);
         } else {
-            Q_dequeue(&receiveQ);           // remove oldest data
-            Q_enqueue(&receiveQ, UART0_D);  // add new data
+            Q_dequeue(&receive0Q);           // remove oldest data
+            Q_enqueue(&receive0Q, UART0_D);  // add new data
         }
     }
     // Error
@@ -145,6 +184,35 @@ void UART0_IRQHandler() {
     }
 
     NVIC_EnableIRQ(UART0_IRQn);
+}
+
+void UART1_IRQHandler() {
+    NVIC_ClearPendingIRQ(UART1_IRQn);
+    NVIC_DisableIRQ(UART1_IRQn);
+    // Transmit
+    if (UART1_S1 & UART_S1_TDRE_MASK) {
+        if (!Q_isEmpty(&transmit1Q)) {
+            UART1_D = Q_dequeue(&transmit1Q);
+        } else {
+            UART1_C2 &= ~UART_C2_TIE_MASK;  // stop transmissions
+        }
+    }
+    // Receive
+    if (UART1_S1 & UART_S1_RDRF_MASK) {
+        if (!Q_isFull(&receive1Q)) {
+            Q_enqueue(&receive1Q, UART1_D);
+        } else {
+            Q_dequeue(&receive1Q);           // remove oldest data
+            Q_enqueue(&receive1Q, UART1_D);  // add new data
+        }
+    }
+    // Error
+    if (UART1_S1 & (UART_S1_OR_MASK | UART_S1_NF_MASK | UART_S1_FE_MASK | UART_S1_PF_MASK)) {
+        // handle error
+        // clear flag
+    }
+
+    NVIC_EnableIRQ(UART1_IRQn);
 }
 
 // Delay routine
@@ -163,7 +231,7 @@ static bool is_menu_displayed = false; /* Flag indicating menu status */
 static void transmit_data(char *pdata, size_t size);
 
 void controlLed(void) {
-    user_input_key = Q_dequeue(&receiveQ);
+    user_input_key = Q_dequeue(&receive0Q);
 
     // Display menu on power-up
     if (!is_menu_displayed) {
@@ -205,7 +273,7 @@ static void transmit_data(char *pdata, size_t size) {
     while (*pdata) {
         // __disable_irq();
         NVIC_DisableIRQ(UART0_IRQn);
-        Q_enqueue(&transmitQ, *pdata);
+        Q_enqueue(&transmit0Q, *pdata);
         pdata++;
         // __enable_irq();
         NVIC_EnableIRQ(UART0_IRQn);
@@ -230,19 +298,27 @@ static void transmit_data(char *pdata, size_t size) {
 
 #pragma endregion LedControl
 
+void esp(void) {
+    if (!Q_isEmpty(&receive1Q)) {
+        char x = Q_dequeue(&receive1Q);
+        transmit_data(&x, 1);
+        transmit_data("\r\n", 3);
+    }
+}
+
 int main(void) {
     // uint8_t rx_data = 0x0;
     SystemCoreClockUpdate();
 
     initIntUART0(BAUD_RATE);
-    initGPIO();
+    initIntUART1(BAUD_RATE);
+    initRGBGPIO();
     initLeds();
 
     transmit_data("\033[0H\033[0J", 9);
 
     while (1) {
-        controlLed();
-        // UART0_Print("x");
-        // delay(0xC000);
+        // controlLed();
+        esp();
     }
 }

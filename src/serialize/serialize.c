@@ -5,10 +5,11 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef struct TComms {
-    char x;
-    char y;
-} TComms;
+typedef struct packet_t {
+    unsigned char x;
+    unsigned char y;
+    unsigned char command;
+} packet_t;
 
 static char _privateBuffer[PACKET_SIZE];
 
