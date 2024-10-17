@@ -5,12 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef struct packet_t {
-    unsigned char x;
-    unsigned char y;
-    unsigned char command;
-} packet_t;
-
 static char _privateBuffer[PACKET_SIZE];
 
 static TResult assemble(char *outputBuffer, const char *inputBuffer, int len) {
