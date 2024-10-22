@@ -16,7 +16,9 @@
 #ifndef MOTOR_DRIVER_H
 #define MOTOR_DRIVER_H
 
-#include "MKL25Z4.h"
+#include "RTE_Components.h"
+#include CMSIS_device_header
+#include "cmsis_os2.h"
 #include "utils.h"
 
 typedef enum
@@ -77,4 +79,25 @@ void rotateRight(Speed speed);
 void curveLeft(Speed speed);
 
 void moveTest(void);
+
+// Dummy, to be further updated
+typedef struct
+{
+    uint8_t x;
+    uint8_t y;
+} Movement;
+
+// Global queue id, create this in main()
+osMessageQueueId_t movementMsg;
+extern bool isMoving = false;
+
+void motorControlThread(void *argument)
+{
+    Movement movement;
+    for (;;)
+    {
+        osMessageQueueGet(movementMsg, &movement, NULL, osWaitForever);
+        // If we have non zero values somewhere, isMoving set to true
+    }
+}
 #endif
