@@ -398,6 +398,14 @@
               <FilePath>.\src\test\test.c</FilePath>
             </File>
             <File>
+              <FileName>cirq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\cirq\cirq.c</FilePath>
+            </File>
+            <File>
+              <FileName>serialize.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\serialize\serialize.c</FilePath>
             </File>
           </Files>
         </Group>
