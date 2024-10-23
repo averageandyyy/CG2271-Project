@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define Q_SIZE 50
+#define Q_SIZE 21
 
 typedef struct Q_t {
     unsigned char Data[Q_SIZE];
