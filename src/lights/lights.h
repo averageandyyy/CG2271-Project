@@ -8,8 +8,6 @@
 #include "cmsis_os2.h"
 #include "utils/utils.h"
 
-#define MASK(x) (1 << (x))
-
 #define PRTE 'E'
 #define PRTC 'C'
 

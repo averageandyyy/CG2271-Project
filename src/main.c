@@ -1,7 +1,10 @@
 #include <stdio.h>
 
-#include "MKL25Z4.h"
+#include "RTE_Components.h"
+#include CMSIS_device_header
+
 #include "cirq/cirq.h"
+#include "cmsis_os2.h"
 #include "led/led.h"
 #include "motors/motor_driver.h"
 #include "packet/packet.h"
@@ -15,7 +18,6 @@
 #define UART1_RX_PIN 1  // PortE Pin 1
 #define UART1_TX_PIN 0  // PortE Pin 0
 #define UART1_INT_PRIO 128
-#define MASK(x) (1 << (x))
 
 Q_t transmit0Q, receive0Q;
 Q_t transmit1Q, receive1Q;
