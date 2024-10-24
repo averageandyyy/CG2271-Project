@@ -2,12 +2,10 @@
 #define UTILS_H
 #include <cstdint>
 
-#define DELAY_DURATION 0x800000
+#define DELAY_DURATION 0x80000
 
-static void delay(volatile uint32_t nof)
-{
-    while (nof != 0)
-    {
+static void delay(volatile uint32_t nof) {
+    while (nof != 0) {
         __asm("NOP");
         nof--;
     }

@@ -4,6 +4,7 @@
 #include "cirq/cirq.h"
 #include "serialize/serialize.h"
 #include "led/led.h"
+#include "utils.h"
 
 #define BAUD_RATE 9600
 #define UART0_RX_PIN 1  // PortA Pin 1
@@ -155,14 +156,6 @@ void UART1_IRQHandler() {
     }
 
     NVIC_EnableIRQ(UART1_IRQn);
-}
-
-// Delay routine
-static void delay(volatile uint32_t nof) {
-    while (nof != 0) {
-        __asm("NOP");
-        nof--;
-    }
 }
 
 static bool is_menu_displayed = false; /* Flag indicating menu status */

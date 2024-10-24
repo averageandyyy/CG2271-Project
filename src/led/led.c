@@ -1,4 +1,4 @@
-#include "led/led.h"
+#include "led.h"
 
 // Init RGB LED
 void initRGBGPIO(void) {
