@@ -3,20 +3,19 @@
 
 #include <stdlib.h>
 
-#define PACKET_SIZE_BIT 24
-#define PACKET_SIZE_BYTE (PACKET_SIZE_BIT / 8)
-
-typedef enum {
-    PACKET_OK = 0,
-    PACKET_INCOMPLETE = 1,
-    PACKET_COMPLETE = 2
-} result_t;
+#define PACKET_SIZE 3
 
 typedef struct packet_t {
     unsigned char x;
     unsigned char y;
     unsigned char command;
 } packet_t;
+
+typedef enum {
+    PACKET_OK = 0,
+    PACKET_INCOMPLETE = 1,
+    PACKET_COMPLETE = 2
+} result_t;
 
 int serialize(char *buffer, void *dataStructure, size_t size);
 

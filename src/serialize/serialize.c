@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static char _privateBuffer[PACKET_SIZE_BYTE];
+static char _privateBuffer[PACKET_SIZE];
 
 static result_t assemble(char *outputBuffer, const char *inputBuffer, int len) {
     // byes copied to output buffer so far
@@ -14,18 +14,18 @@ static result_t assemble(char *outputBuffer, const char *inputBuffer, int len) {
     // for leftover bytes from previous call
     static bool leftoverFlag = false;
     static int bytesLeftover = 0;
-    static char leftoverBuffer[PACKET_SIZE_BYTE];
+    static char leftoverBuffer[PACKET_SIZE];
 
     int bytesAvailableInOutputBuffer;
 
     // copy leftover bytes from previous call first
     if (leftoverFlag) {
         int bytesToCopyToOutput;
-        if (bytesLeftover <= PACKET_SIZE_BYTE) {  // leftover bytes cannot form a full packet
+        if (bytesLeftover <= PACKET_SIZE) {  // leftover bytes cannot form a full packet
             leftoverFlag = false;
             bytesToCopyToOutput = bytesLeftover;
         } else {  // leftover bytes can form a full packet
-            bytesToCopyToOutput = PACKET_SIZE_BYTE;
+            bytesToCopyToOutput = PACKET_SIZE;
         }
 
         bytesLeftover -= bytesToCopyToOutput;  // remove bytes that were copied from leftover buffer
@@ -37,8 +37,8 @@ static result_t assemble(char *outputBuffer, const char *inputBuffer, int len) {
     }
 
     // fill up leftover buffer
-    if (counter + len >= PACKET_SIZE_BYTE) {  // copied bytes + current stream exceed packet size; there will be bytes leftover
-        bytesAvailableInOutputBuffer = PACKET_SIZE_BYTE - counter;
+    if (counter + len >= PACKET_SIZE) {  // copied bytes + current stream exceed packet size; there will be bytes leftover
+        bytesAvailableInOutputBuffer = PACKET_SIZE - counter;
         leftoverFlag = true;
         int bytesToCopyToLeftover = len - bytesAvailableInOutputBuffer;
 
@@ -57,7 +57,7 @@ static result_t assemble(char *outputBuffer, const char *inputBuffer, int len) {
         outputBuffer[counter++] = inputBuffer[i];
     }
 
-    if (counter == PACKET_SIZE_BYTE) {
+    if (counter == PACKET_SIZE) {
         counter = 0;
         return PACKET_COMPLETE;
     }
@@ -68,7 +68,7 @@ result_t deserialize(const char *buffer, int len, void *output) {
     result_t result = assemble(_privateBuffer, buffer, len);
 
     if (result == PACKET_COMPLETE) {
-        memcpy(output, _privateBuffer, PACKET_SIZE_BYTE);
+        memcpy(output, _privateBuffer, PACKET_SIZE);
         return PACKET_OK;
     }
     return result;

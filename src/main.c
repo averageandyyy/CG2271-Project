@@ -176,7 +176,7 @@ void UART0_IRQHandler() {
             Q_enqueue(&receive0Q, UART0_D);
         } else {
             // remove oldest packet and add new packet
-            for (int i = 0; i < PACKET_SIZE_BYTE; i++) {
+            for (int i = 0; i < PACKET_SIZE; i++) {
                 Q_dequeue(&receive1Q);
                 Q_enqueue(&receive1Q, UART1_D);
             }
@@ -208,7 +208,7 @@ void UART1_IRQHandler() {
             Q_enqueue(&receive1Q, UART1_D);
         } else {
             // remove oldest packet and add new packet
-            for (int i = 0; i < PACKET_SIZE_BYTE; i++) {
+            for (int i = 0; i < PACKET_SIZE; i++) {
                 Q_dequeue(&receive1Q);
                 Q_enqueue(&receive1Q, UART1_D);
             }
@@ -305,10 +305,10 @@ static void transmit_data(void* pdata, size_t size) {
 #pragma endregion LedControl
 
 void receiveEspTest(void) {
-    char buffer[PACKET_SIZE_BYTE] = {};
+    char buffer[PACKET_SIZE] = {};
     int count = 0;
 
-    while (!Q_isEmpty(&receive1Q) && count < PACKET_SIZE_BYTE) {
+    while (!Q_isEmpty(&receive1Q) && count < PACKET_SIZE) {
         buffer[count++] = Q_dequeue(&receive1Q);
     }
 
