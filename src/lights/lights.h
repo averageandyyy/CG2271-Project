@@ -1,16 +1,19 @@
 #ifndef LIGHTS_H
 #define LIGHTS_H
 
+#include <stdbool.h>
+
 #include "RTE_Components.h"
 #include CMSIS_device_header
 #include "cmsis_os2.h"
-#include "utils.h"
+#include "utils/utils.h"
 
-#define PRTE "E"
-#define PRTC "C"
+#define MASK(x) (1 << (x))
 
-typedef struct
-{
+#define PRTE 'E'
+#define PRTC 'C'
+
+typedef struct {
     char port;
     uint8_t pin;
 } PortPin;
