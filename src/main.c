@@ -6,6 +6,7 @@
 #include "cirq/cirq.h"
 #include "cmsis_os2.h"
 #include "led/led.h"
+#include "lights/lights.h"
 #include "motors/motor_driver.h"
 #include "packet/packet.h"
 #include "serialize/serialize.h"
@@ -176,19 +177,19 @@ void controlLed(void) {
     }
 
     if (user_input_key == '1') {
-        initLeds();
+        initRgbLed();
         onLed(RED);
         transmit_data("Red ON\r\n", 9);
     } else if (user_input_key == '2') {
-        initLeds();
+        initRgbLed();
         onLed(GREEN);
         transmit_data("Green ON\r\n", 11);
     } else if (user_input_key == '3') {
-        initLeds();
+        initRgbLed();
         onLed(BLUE);
         transmit_data("Blue ON\r\n", 10);
     } else if (user_input_key == '0') {
-        initLeds();
+        initRgbLed();
         transmit_data("LEDs OFF\r\n", 11);
     }
 }
@@ -278,15 +279,31 @@ void receiveEspTest(void) {
     }
 }
 
+void initRtos() {
+    osKernelInitialize();
+    osThreadNew(green_lights_thread, NULL, NULL);
+    osKernelStart();
+}
+
 int main(void) {
     SystemCoreClockUpdate();
-
+    
+    // UART
     initIntUART0(BAUD_RATE);
     initIntUART1(BAUD_RATE);
-    initRGBGPIO();
-    initLeds();
 
+    // RGB Led
+    initRGBGPIO();
+    initRgbLed();
+
+    // Light bars
+    initLEDGPIO();
+
+    // clear serial monitor screen
     printString("\033[0H\033[0J");
+
+    // initialise RTOS
+    initRtos();
 
     while (1) {
         // controlLed();

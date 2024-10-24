@@ -52,7 +52,7 @@ void offLed(colour_t colour) {
     }
 }
 
-void initLeds(void) {
+void initRgbLed(void) {
     offLed(RED);
     offLed(GREEN);
     offLed(BLUE);
