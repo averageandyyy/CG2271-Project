@@ -412,6 +412,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\led\led.c</FilePath>
             </File>
+            <File>
+              <FileName>utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\utils\utils.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

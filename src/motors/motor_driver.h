@@ -16,22 +16,23 @@
 #ifndef MOTOR_DRIVER_H
 #define MOTOR_DRIVER_H
 
+#include <stdint.h>
+
 #include "MKL25Z4.h"
-#include "utils.h"
+#include "serialize/serialize.h"
+#include "utils/utils.h"
 
-typedef enum
-{
-    STOP = 0,
-    SLOW = 25,
-    MEDIUM = 50,
-    FAST = 100
-} Speed;
-
-typedef enum
-{
+typedef enum {
     FORWARD,
     BACKWARD
 } Direction;
+
+typedef struct motor_t {
+    Direction lDir;
+    unsigned char lSpeed;
+    Direction rDir;
+    unsigned char rSpeed;
+} motor_t;
 
 /** @brief Defines the PWM period for a 500 Hz signal */
 #define PWM_PERIOD 749
@@ -50,7 +51,7 @@ void initMotors(void);
  * This function enables the clocks for Ports A and B, and configures the pin
  * multiplexing to use the TPM (Timer/PWM Module) for generating PWM signals.
  */
-void initGPIO(void);
+void initMotorGPIO(void);
 
 /**
  * @brief Configures TPM timers for PWM generation.
@@ -67,14 +68,10 @@ void initTimers(void);
  */
 void stop(void);
 
-void moveRightSide(Direction dir, Speed speed);
-void moveLeftSide(Direction dir, Speed speed);
+void parsePacket(packet_t* packet, motor_t* settings);
 
-void moveForward(Speed speed);
-void moveBackward(Speed speed);
-void rotateLeft(Speed speed);
-void rotateRight(Speed speed);
-void curveLeft(Speed speed);
+void moveRobot(motor_t* motor_settings);
+void moveRightSide(Direction dir, unsigned char speed);
+void moveLeftSide(Direction dir, unsigned char speed);
 
-void moveTest(void);
 #endif

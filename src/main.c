@@ -2,9 +2,11 @@
 
 #include "MKL25Z4.h"
 #include "cirq/cirq.h"
-#include "serialize/serialize.h"
 #include "led/led.h"
-#include "utils.h"
+#include "motors/motor_driver.h"
+#include "packet/packet.h"
+#include "serialize/serialize.h"
+#include "utils/utils.h"
 
 #define BAUD_RATE 9600
 #define UART0_RX_PIN 1  // PortA Pin 1
@@ -202,6 +204,54 @@ static void transmit_data(void* pdata, size_t size) {
     UART0_C2 |= UART_C2_TIE_MASK;
 }
 
+static void printString(char* str) {
+    while (*str) {
+        NVIC_DisableIRQ(UART0_IRQn);
+        Q_enqueue(&transmit0Q, *str++);
+        NVIC_EnableIRQ(UART0_IRQn);
+    }
+    UART0_C2 |= UART_C2_TIE_MASK;
+}
+
+static void printPacket(packet_t* packet) {
+    char strX[4] = {0};
+    char strY[4] = {0};
+    char strCommand[4] = {0};
+    sprintf(strX, "%03d", packet->x);
+    sprintf(strY, "%03d", packet->y);
+    sprintf(strCommand, "%03d", packet->command);
+
+    printString(strX);
+    printString(" ");
+    printString(strY);
+    printString(" ");
+    printString(strCommand);
+    printString("\r\n");
+}
+
+static void printMotor(motor_t* motor) {
+    char lSpeedString[4] = {0};
+    char rSpeedString[4] = {0};
+    sprintf(lSpeedString, "%03d", motor->lSpeed);
+    sprintf(rSpeedString, "%03d", motor->rSpeed);
+
+    if (motor->lDir == FORWARD) {
+        printString("F ");
+    } else if (motor->lDir == BACKWARD) {
+        printString("B ");
+    }
+    printString(lSpeedString);
+    printString(" | ");
+
+    if (motor->rDir == FORWARD) {
+        printString("F ");
+    } else if (motor->rDir == BACKWARD) {
+        printString("B ");
+    }
+    printString(rSpeedString);
+    printString("\r\n");
+}
+
 void receiveEspTest(void) {
     char buffer[PACKET_SIZE] = {};
     int count = 0;
@@ -219,25 +269,10 @@ void receiveEspTest(void) {
     }
 
     if (result == PACKET_OK) {
-        char strX[4] = {};
-        char strY[4] = {};
-        char strCommand[4] = {};
-        sprintf(strX, "%u", packet.x);
-        sprintf(strY, "%u", packet.y);
-        sprintf(strCommand, "%u", packet.command);
+        motor_t motor;
+        parsePacket(&packet, &motor);
 
-        transmit_data(&strX, 4);
-        transmit_data(" ", 2);
-        transmit_data(&strY, 4);
-        transmit_data(" ", 2);
-        transmit_data(&strCommand, 4);
-        transmit_data("\r\n", 3);
-
-        if (packet.x > 128) {
-            onLed(RED);
-        } else {
-            offLed(RED);
-        }
+        printMotor(&motor);
     }
 }
 
@@ -249,7 +284,7 @@ int main(void) {
     initRGBGPIO();
     initLeds();
 
-    transmit_data("\033[0H\033[0J", 9);
+    printString("\033[0H\033[0J");
 
     while (1) {
         // controlLed();

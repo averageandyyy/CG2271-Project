@@ -11,14 +11,12 @@
 
 #include "motors/motor_driver.h"
 
-void initMotors(void)
-{
-    initGPIO();
+void initMotors(void) {
+    initMotorGPIO();
     initTimers();
 }
 
-void initGPIO(void)
-{
+void initMotorGPIO(void) {
     // Enable clock to Ports A and B
     SIM->SCGC5 |= (SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTB_MASK);
 
@@ -36,8 +34,7 @@ void initGPIO(void)
     PORTB->PCR[1] |= PORT_PCR_MUX(3);
 }
 
-void initTimers(void)
-{
+void initTimers(void) {
     // Enable clocks to TPM1 and TPM2
     SIM->SCGC6 |= (SIM_SCGC6_TPM1_MASK | SIM_SCGC6_TPM2_MASK);
 
@@ -78,100 +75,52 @@ void initTimers(void)
     // TPM1_C1V = 0;
 }
 
-void stop(void)
-{
+void stop(void) {
     TPM2_C0V = 0;
     TPM2_C1V = 0;
     TPM1_C0V = 0;
     TPM1_C1V = 0;
 }
 
-void moveForward(Speed speed)
-{
-    moveLeftSide(FORWARD, speed);
-    moveRightSide(FORWARD, speed);
+void parsePacket(packet_t* packet, motor_t* settings) {
+    int x = normalise((int) packet->x);
+    int y = normalise((int) packet->y);
+
+    int lMotorVelocity = constrain(x - y, -128, 127);
+    int rMotorVelocity = constrain(-x - y, -128, 127);
+
+    settings->lSpeed = map(abs(lMotorVelocity), 0, 127, 0, 100);
+    settings->rSpeed = map(abs(rMotorVelocity), 0, 127, 0, 100);
+
+    settings->lDir = (lMotorVelocity >= 0) ? FORWARD : BACKWARD;
+    settings->rDir = (rMotorVelocity >= 0) ? FORWARD : BACKWARD;
 }
 
-void moveBackward(Speed speed)
-{
-    moveLeftSide(BACKWARD, speed);
-    moveRightSide(BACKWARD, speed);
-}
-
-void rotateLeft(Speed speed)
-{
-    moveRightSide(FORWARD, speed);
-    moveLeftSide(BACKWARD, speed);
-}
-
-void rotateRight(Speed speed)
-{
-    moveRightSide(BACKWARD, speed);
-    moveLeftSide(FORWARD, speed);
-}
-
-void curveLeft(Speed speed)
-{
-    moveRightSide(FORWARD, speed);
-    moveLeftSide(FORWARD, speed / 2);
-}
-
-void curveRight(Speed speed)
-{
-    moveRightSide(FORWARD, speed / 2);
-    moveLeftSide(FORWARD, speed);
-}
-
-void moveRightSide(Direction dir, Speed speed)
-{
+void moveRightSide(Direction dir, unsigned char speed) {
     uint16_t pwmValue = speed * PWM_PERIOD / 100;
 
-    if (dir == FORWARD)
-    {
+    if (dir == FORWARD) {
         TPM2_C0V = pwmValue;
         TPM2_C1V = 0;
-    }
-    else
-    {
+    } else {
         TPM2_C1V = pwmValue;
         TPM2_C0V = 0;
     }
 }
 
-void moveLeftSide(Direction dir, Speed speed)
-{
+void moveLeftSide(Direction dir, unsigned char speed) {
     uint16_t pwmValue = speed * PWM_PERIOD / 100;
 
-    if (dir == FORWARD)
-    {
+    if (dir == FORWARD) {
         TPM1_C0V = pwmValue;
         TPM1_C1V = 0;
-    }
-    else
-    {
+    } else {
         TPM1_C1V = pwmValue;
         TPM1_C0V = 0;
     }
 }
 
-void moveTest(void)
-{
-    moveForward(FAST);
-    delay(DELAY_DURATION);
-    moveBackward(FAST);
-    delay(DELAY_DURATION);
-
-    rotateLeft(FAST);
-    delay(DELAY_DURATION);
-    rotateRight(FAST);
-    delay(DELAY_DURATION);
-    rotateRight(FAST);
-    delay(DELAY_DURATION);
-    rotateLeft(FAST);
-    delay(DELAY_DURATION);
-
-    curveLeft(FAST);
-    delay(DELAY_DURATION);
-    curveRight(FAST);
-    delay(DELAY_DURATION);
+void moveRobot(motor_t* settings) {
+    moveLeftSide(settings->lDir, settings->lSpeed);
+    moveRightSide(settings->rDir, settings->rSpeed);
 }
