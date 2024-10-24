@@ -5,14 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef struct TComms {
-    char x;
-    char y;
-} TComms;
-
 static char _privateBuffer[PACKET_SIZE];
 
-static TResult assemble(char *outputBuffer, const char *inputBuffer, int len) {
+static result_t assemble(char *outputBuffer, const char *inputBuffer, int len) {
     // byes copied to output buffer so far
     static int counter = 0;
 
@@ -69,8 +64,8 @@ static TResult assemble(char *outputBuffer, const char *inputBuffer, int len) {
     return PACKET_INCOMPLETE;
 }
 
-TResult deserialize(const char *buffer, int len, void *output) {
-    TResult result = assemble(_privateBuffer, buffer, len);
+result_t deserialize(const char *buffer, int len, void *output) {
+    result_t result = assemble(_privateBuffer, buffer, len);
 
     if (result == PACKET_COMPLETE) {
         memcpy(output, _privateBuffer, PACKET_SIZE);

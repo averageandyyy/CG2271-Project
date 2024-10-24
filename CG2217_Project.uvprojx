@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\include</IncludePath>
+              <IncludePath>.\src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -398,6 +398,24 @@
               <FilePath>.\src\test\test.c</FilePath>
             </File>
             <File>
+              <FileName>cirq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\cirq\cirq.c</FilePath>
+            </File>
+            <File>
+              <FileName>serialize.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\serialize\serialize.c</FilePath>
+            </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\led\led.c</FilePath>
+            </File>
+            <File>
+              <FileName>utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\utils\utils.c</FilePath>
             </File>
           </Files>
         </Group>
