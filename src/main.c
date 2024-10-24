@@ -3,6 +3,7 @@
 #include "MKL25Z4.h"
 #include "cirq/cirq.h"
 #include "serialize/serialize.h"
+#include "led/led.h"
 
 #define BAUD_RATE 9600
 #define UART0_RX_PIN 1  // PortA Pin 1
@@ -11,16 +12,7 @@
 #define UART1_RX_PIN 1  // PortE Pin 1
 #define UART1_TX_PIN 0  // PortE Pin 0
 #define UART1_INT_PRIO 128
-#define RED_LED 18    // PortB Pin 18
-#define GREEN_LED 19  // PortB Pin 19
-#define BLUE_LED 1    // PortD Pin 1
 #define MASK(x) (1 << (x))
-
-typedef enum colour {
-    RED,
-    GREEN,
-    BLUE
-} colour_t;
 
 Q_t transmit0Q, receive0Q;
 Q_t transmit1Q, receive1Q;
@@ -101,64 +93,6 @@ void initIntUART1(uint32_t baud_rate) {
     UART1_C2 |= UART_C2_RIE_MASK;
 }
 
-// Init RGB LED
-void initRGBGPIO(void) {
-    // Enable Clock to PORTB and PORTD
-    SIM_SCGC5 |= SIM_SCGC5_PORTB(1) | SIM_SCGC5_PORTD(1);
-
-    // Configure MUX settings to make all 3 pins GPIO
-    PORTB_PCR(RED_LED) &= ~PORT_PCR_MUX_MASK;
-    PORTB_PCR(RED_LED) |= PORT_PCR_MUX(1);
-
-    PORTB_PCR(GREEN_LED) &= ~PORT_PCR_MUX_MASK;
-    PORTB_PCR(GREEN_LED) |= PORT_PCR_MUX(1);
-
-    PORTD_PCR(BLUE_LED) &= ~PORT_PCR_MUX_MASK;
-    PORTD_PCR(BLUE_LED) |= PORT_PCR_MUX(1);
-
-    // Set Data Direction Registers for PortB and PortD
-    GPIOB_PDDR |= MASK(RED_LED) | MASK(GREEN_LED);
-    GPIOD_PDDR |= MASK(BLUE_LED);
-}
-
-void onLed(colour_t colour) {
-    switch (colour) {
-    case RED:		
-		GPIOB_PCOR = MASK(RED_LED);
-        break;
-    case GREEN:
-        GPIOB_PCOR = MASK(GREEN_LED);
-        break;
-    case BLUE:
-        GPIOD_PCOR = MASK(BLUE_LED);
-        break;
-    default:
-        break;
-    }
-}
-
-void offLed(colour_t colour) {
-    switch (colour) {
-    case RED:
-        GPIOB_PSOR = MASK(RED_LED);
-        break;
-    case GREEN:
-        GPIOB_PSOR = MASK(GREEN_LED);
-        break;
-    case BLUE:
-        GPIOD_PSOR = MASK(BLUE_LED);
-        break;
-    default:
-        break;
-    }
-}
-
-void initLeds() {
-    offLed(RED);
-    offLed(GREEN);
-    offLed(BLUE);
-}
-
 void UART0_IRQHandler() {
     NVIC_ClearPendingIRQ(UART0_IRQn);
     NVIC_DisableIRQ(UART0_IRQn);
@@ -231,11 +165,8 @@ static void delay(volatile uint32_t nof) {
     }
 }
 
-#pragma region LedControl
-
 static bool is_menu_displayed = false; /* Flag indicating menu status */
 
-// Local function prototypes
 static void transmit_data(void* pdata, size_t size);
 
 void controlLed(void) {
@@ -263,15 +194,6 @@ void controlLed(void) {
         initLeds();
         transmit_data("LEDs OFF\r\n", 11);
     }
-
-    // // Do periodic logging (every 5sec)
-    // if (logging_started) {
-    //     do_log_count++;
-    //     if (do_log_count >= 5) {
-    //         do_log_count = 0;
-    //         transmit_data("My UART\r\n", 10);
-    //     }
-    // }
 }
 
 static void transmit_data(void* pdata, size_t size) {
@@ -285,24 +207,7 @@ static void transmit_data(void* pdata, size_t size) {
         NVIC_EnableIRQ(UART0_IRQn);
     }
     UART0_C2 |= UART_C2_TIE_MASK;
-
-    // // Wait until complete string is transmitted on serial port
-    // // and every byte is shifted out of Transmit buffer before
-    // // loading new byte
-    // while (*pdata) {
-    //     __disable_irq();
-    //     UART0->D = *pdata;
-
-    //     // Wait until byte is transmitted from Tx Buffer
-    //     while (!(UART0->S1 & UART_S1_TDRE_MASK)) {
-    //     }
-    //     __enable_irq();
-
-    //     pdata++;
-    // }
 }
-
-#pragma endregion LedControl
 
 void receiveEspTest(void) {
     char buffer[PACKET_SIZE] = {};
@@ -338,7 +243,7 @@ void receiveEspTest(void) {
         if (packet.x > 128) {
             onLed(RED);
         } else {
-            initLeds();
+            offLed(RED);
         }
     }
 }

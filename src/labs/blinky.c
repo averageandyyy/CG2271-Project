@@ -8,22 +8,22 @@ void initBlinkyGPIO(void)
     SIM->SCGC5 |= ((SIM_SCGC5_PORTB_MASK) | (SIM_SCGC5_PORTD_MASK));
 
     // Reset pin MUX and set them to GPIO. Refer to Pinout for ALT1
-    PORTB->PCR[RED_LED] &= ~PORT_PCR_MUX_MASK;
-    PORTB->PCR[RED_LED] |= PORT_PCR_MUX(1); // 1 for GPIO
+    PORTB->PCR[RED_LED_PIN] &= ~PORT_PCR_MUX_MASK;
+    PORTB->PCR[RED_LED_PIN] |= PORT_PCR_MUX(1); // 1 for GPIO
 
-    PORTB->PCR[GREEN_LED] &= ~PORT_PCR_MUX_MASK;
-    PORTB->PCR[GREEN_LED] |= PORT_PCR_MUX(1); // 1 for GPIO
+    PORTB->PCR[GREEN_LED_PIN] &= ~PORT_PCR_MUX_MASK;
+    PORTB->PCR[GREEN_LED_PIN] |= PORT_PCR_MUX(1); // 1 for GPIO
 
-    PORTD->PCR[BLUE_LED] &= ~PORT_PCR_MUX_MASK;
-    PORTD->PCR[BLUE_LED] |= PORT_PCR_MUX(1); // 1 for GPIO
+    PORTD->PCR[BLUE_LED_PIN] &= ~PORT_PCR_MUX_MASK;
+    PORTD->PCR[BLUE_LED_PIN] |= PORT_PCR_MUX(1); // 1 for GPIO
 
     // Set data direction
-    PTB->PDDR |= (MASK(RED_LED) | MASK(GREEN_LED));
-    PTD->PDDR |= MASK(BLUE_LED);
+    PTB->PDDR |= (MASK(RED_LED_PIN) | MASK(GREEN_LED_PIN));
+    PTD->PDDR |= MASK(BLUE_LED_PIN);
 
     // Off all lights
-    PTB->PCOR |= (MASK(RED_LED) | MASK(GREEN_LED));
-    PTD->PCOR |= MASK(BLUE_LED);
+    PTB->PCOR |= (MASK(RED_LED_PIN) | MASK(GREEN_LED_PIN));
+    PTD->PCOR |= MASK(BLUE_LED_PIN);
 }
 
 void initBlinkyTimer(void)
@@ -70,20 +70,20 @@ void blinky_control(color_t color)
 {
         if (color == RED)
         {
-                PTB->PCOR |= MASK(RED_LED);
-                PTB->PSOR |= MASK(GREEN_LED);
-                PTD->PSOR |= MASK(BLUE_LED);
+                PTB->PCOR |= MASK(RED_LED_PIN);
+                PTB->PSOR |= MASK(GREEN_LED_PIN);
+                PTD->PSOR |= MASK(BLUE_LED_PIN);
         }
         else if (color == GREEN)
         {
-                PTB->PCOR |= MASK(GREEN_LED);
-                PTB->PSOR |= MASK(RED_LED);
-                PTD->PSOR |= MASK(BLUE_LED);
+                PTB->PCOR |= MASK(GREEN_LED_PIN);
+                PTB->PSOR |= MASK(RED_LED_PIN);
+                PTD->PSOR |= MASK(BLUE_LED_PIN);
         }
         else if (color == BLUE)
         {
-                PTD->PCOR |= MASK(BLUE_LED);
-                PTB->PSOR |= MASK(GREEN_LED);
-                PTB->PSOR |= MASK(RED_LED);
+                PTD->PCOR |= MASK(BLUE_LED_PIN);
+                PTB->PSOR |= MASK(GREEN_LED_PIN);
+                PTB->PSOR |= MASK(RED_LED_PIN);
         }
 }
