@@ -310,15 +310,18 @@ void receive_packet_thread(void* argument) {
 
         if (result == PACKET_OK) {
             // Movement command
-            if (packet.command == 0) {
+            if (packet.command == 1) {
                 motor_t motor;
                 parsePacket(&packet, &motor);
 
                 // Move motor message into queue
-                osMessageQueuePut(motorMsg, &motor, NULL, 0);
-            } else {
+                osMessageQueuePut(motorMsg, &motor, 0, 0);
+            } else if (packet.command == 2) {
                 // Music toggle command
                 isMary = !isMary;
+            } else {
+                isMoving = false;
+                stop();
             }
         }
         
@@ -370,8 +373,8 @@ int main(void) {
     // initialise RTOS
     initRTOS();
 
-    while (1) {
-        // controlLed();
-        receiveEspTest();
-    }
+    // while (1) {
+    //     // controlLed();
+    //     receiveEspTest();
+    // }
 }

@@ -26,13 +26,13 @@ void initLEDGPIO(void) {
     PORTC->PCR[4] |= PORT_PCR_MUX(1);
     PORTC->PCR[3] &= ~PORT_PCR_MUX_MASK;
     PORTC->PCR[3] |= PORT_PCR_MUX(1);
-    PORTC->PCR[0] &= ~PORT_PCR_MUX_MASK;
-    PORTC->PCR[0] |= PORT_PCR_MUX(1);
+    PORTC->PCR[12] &= ~PORT_PCR_MUX_MASK;
+    PORTC->PCR[12] |= PORT_PCR_MUX(1);
 
     // Set output directions
     PTE->PDDR |= (MASK(20) | MASK(21) | MASK(22) | MASK(23) | MASK(29) | MASK(30));
 
-    PTC->PDDR |= (MASK(6) | MASK(5) | MASK(4) | MASK(3) | MASK(0));
+    PTC->PDDR |= (MASK(6) | MASK(5) | MASK(4) | MASK(3) | MASK(12));
 }
 
 void onELight(uint8_t id) { PTE->PSOR |= MASK(id); }
@@ -75,7 +75,7 @@ void offAllLights(PortPin lights[], size_t size) {
 PortPin greenLights[10] = {{PRTE, 20}, {PRTE, 21}, {PRTE, 22}, {PRTE, 23}, {PRTE, 29},
                            {PRTE, 30}, {PRTC, 6},  {PRTC, 5},  {PRTC, 4},  {PRTC, 3}};
 
-PortPin redLight = {PRTC, 0};
+PortPin redLight = {PRTC, 12};
 
 bool isMoving = false;
 
@@ -120,6 +120,11 @@ void red_light_thread(void *argument) {
             osDelay(250);
         }
         offLight(redLight);
+		if (isMoving) {
+            osDelay(500);
+        } else {
+            osDelay(250);
+        }
     }
 }
 
