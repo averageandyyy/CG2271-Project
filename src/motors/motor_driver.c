@@ -13,7 +13,7 @@
 
 void initMotors(void) {
     initMotorGPIO();
-    initTimers();
+    initMotorTimers();
 }
 
 void initMotorGPIO(void) {
@@ -32,7 +32,7 @@ void initMotorGPIO(void) {
     PORTB->PCR[LEFT_BLUE_BACK_PIN] |= PORT_PCR_MUX(3);
 }
 
-void initTimers(void) {
+void initMotorTimers(void) {
     // Enable clocks to TPM1 and TPM2
     SIM->SCGC6 |= (SIM_SCGC6_TPM1_MASK | SIM_SCGC6_TPM2_MASK);
 
@@ -119,6 +119,31 @@ void moveLeftSide(Direction dir, unsigned char speed) {
 }
 
 void moveRobot(motor_t* settings) {
+    if (setting->lSpeed != 0 || setting->rSpeed != 0) {
+        isMoving = true;
+    } else {
+        isMoving = false;
+    }
+
     moveLeftSide(settings->lDir, settings->lSpeed);
     moveRightSide(settings->rDir, settings->rSpeed);
+    osDelay(100); // To be tested
+}
+
+osMessageQueueId_t motorMsg;
+
+void motor_control_thread(void* argument) {
+    motor_t myMotor;
+    for (;;) {
+        // Get motor message from queue, blocks and allows other threads to run if no message is received
+        osMessageQueueGet(motorMsg, &myMotor, NULL, osWaitForever);
+        moveRobot(&myMotor)
+    }
+}
+
+void initMotorControlRTOS() {
+    // Initialize motor message queue
+    motorMsg = osMessageQueueNew(MSG_COUNT, sizeof(motor_t), NULL);
+    // Initialize motor control thread
+    osThreadNew(motor_control_thread, NULL, NULL);
 }

@@ -18,14 +18,20 @@
 
 #include <stdint.h>
 
-#include "MKL25Z4.h"
+#include "RTE_Components.h"
+#include CMSIS_device_header
+#include "cmsis_os2.h"
 #include "serialize/serialize.h"
 #include "utils/utils.h"
+
+// For global isMoving variable
+#include "lights/lights.h"
 
 #define LEFT_GREEN_FORWARD_PIN 0   // PortB 0; TPM1_CH0
 #define LEFT_BLUE_BACK_PIN 1       // PortB 1; TPM1_CH1
 #define RIGHT_GREEN_FORWARD_PIN 1  // PortA 1; TPM2_CH0
 #define RIGHT_BLUE_BACK_PIN 2      // PortA 2; TPM2_CH1
+#define MSG_COUNT 10
 
 typedef enum {
     FORWARD,
@@ -64,7 +70,7 @@ void initMotorGPIO(void);
  * This function sets up the TPM1 and TPM2 timers with a prescaler of 128,
  * configures the PWM period, and enables edge-aligned PWM on the specified channels.
  */
-void initTimers(void);
+void initMotorTimers(void);
 
 /**
  * @brief Stops all motors.
@@ -78,5 +84,10 @@ void parsePacket(packet_t* packet, motor_t* settings);
 void moveRobot(motor_t* motor_settings);
 void moveRightSide(Direction dir, unsigned char speed);
 void moveLeftSide(Direction dir, unsigned char speed);
+
+extern osMessageQueueId_t motorMsg;
+
+void initMotorControlRTOS();
+void motor_control_thread(void* argument);
 
 #endif
