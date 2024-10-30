@@ -8,6 +8,7 @@
 #include "led/led.h"
 #include "lights/lights.h"
 #include "motors/motor_driver.h"
+#include "music/music.h"
 #include "packet/packet.h"
 #include "serialize/serialize.h"
 #include "utils/utils.h"
@@ -316,6 +317,7 @@ void receive_packet_thread(void* argument) {
                 osMessageQueuePut(motorMsg, &motor, NULL, 0);
             } else {
                 // Music toggle command
+                isMary = !isMary;
             }
         }
         
@@ -334,6 +336,7 @@ void initRTOS() {
     initPacketThreadRTOS();
     initLightsRTOS();
     initMotorControlRTOS();
+    initMusicRTOS();
     osKernelStart();
 }
 
@@ -351,6 +354,9 @@ void initHardware() {
 
     // Motors
     initMotors();
+
+    // Music
+    initMusic();
 }
 
 int main(void) {
