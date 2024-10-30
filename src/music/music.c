@@ -45,9 +45,9 @@ void music_thread(void* argument) {
             for (int i = 0; i < 27 && isMary; i++) {
                 TPM0_MOD = mary[i];
                 TPM0_C4V = mary[i] / 2;
-                osDelay(500);
+                osDelay(300);
                 TPM0_C4V = 0;
-                osDelay(50);
+                osDelay(25);
             }
         } else {
             for (int i = 0; i < 25 && !isMary; i++) {

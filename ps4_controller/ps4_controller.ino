@@ -83,40 +83,42 @@ void processGamepad(ControllerPtr ctl) {
   //  a(), b(), x(), y(), l1(), etc...
   uint sendX = 0;
   uint sendY = 0;
-  packet_t packet;
+  packet_t packet = {0, 0, 0};
 
   //== PS4 X button = 0x0001 ==//
   if (ctl->buttons() == 0x0001) {
     // code for when X button is pushed
     packet.command = 2;
-  }
-  if (ctl->buttons() != 0x0001) {
-    // code for when X button is released
-
-  }
-
-  //== LEFT JOYSTICK DEADZONE ==//
-  if (ctl->axisRY() > -25 && ctl->axisRY() < 25 && ctl->axisRX() > -25 && ctl->axisRX() < 25) {
-    // code for when left joystick is at idle
-    Serial.print("Idle: ");
-    packet.command = 0;
+    Serial.println("X pressed");
+    Serial2.write((uint8_t*)&packet, sizeof(packet));
+  } else if (ctl->buttons() == 0x0002) {
+    packet.command = 3;
+    Serial.println("O pressed");
+    Serial2.write((uint8_t*)&packet, sizeof(packet));
   } else {
-    Serial.print("Moving: ");
-    packet.command = 1;
+    //== LEFT JOYSTICK DEADZONE ==//
+    if (ctl->axisY() > -60 && ctl->axisY() < 60 && ctl->axisX() > -60 && ctl->axisX() < 60) {
+      // code for when left joystick is at idle
+      Serial.print("Idle: ");
+      packet.command = 0;
+    } else {
+      Serial.print("Moving: ");
+      packet.command = 1;
+    }
+
+    sendX = ((ctl->axisX() + 511) >> 2);
+    sendY = ((ctl->axisY() + 511) >> 2);
+    Serial.print("X: ");
+    Serial.print(sendX);
+    Serial.print(" Y: ");
+    Serial.println(sendY);
+
+    packet.x = sendX;
+    packet.y = sendY;
+
+    Serial2.write((uint8_t*)&packet, sizeof(packet));
+    // dumpGamepad(ctl); // uncomment for any hardware debugging
   }
-
-  sendX = ((ctl->axisRX() + 511) >> 2);
-  sendY = ((ctl->axisRY() + 511) >> 2);
-  Serial.print("X: ");
-  Serial.print(sendX);
-  Serial.print(" Y: ");
-  Serial.println(sendY);
-
-  packet.x = sendX;
-  packet.y = sendY;
-
-  Serial2.write((uint8_t*)&packet, sizeof(packet));
-   // dumpGamepad(ctl); // uncomment for any hardware debugging
 }
 
 void processControllers() {
@@ -162,8 +164,12 @@ void loop() {
   // This call fetches all the controllers' data.
   // Call this function in your main loop.
   bool dataUpdated = BP32.update();
-  if (dataUpdated)
+  if (dataUpdated) {
     processControllers();
+  } else {
+    // packet_t packet = {0, 0, 0};
+    // Serial2.write((uint8_t*)&packet, sizeof(packet));
+  }
 
   // The main loop must have some kind of "yield to lower priority task" event.
   // Otherwise, the watchdog will get triggered.

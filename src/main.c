@@ -2,10 +2,9 @@
 
 #include "RTE_Components.h"
 #include CMSIS_device_header
-#include "cmsis_os2.h"
 #include "MKL25Z4.h"
-
 #include "cirq/cirq.h"
+#include "cmsis_os2.h"
 #include "led/led.h"
 #include "lights/lights.h"
 #include "motors/motor_driver.h"
@@ -133,7 +132,6 @@ void UART0_IRQHandler() {
     NVIC_EnableIRQ(UART0_IRQn);
 }
 
-
 osSemaphoreId_t packetSemaphore;
 void UART1_IRQHandler() {
     NVIC_ClearPendingIRQ(UART1_IRQn);
@@ -150,7 +148,7 @@ void UART1_IRQHandler() {
     if (UART1_S1 & UART_S1_RDRF_MASK) {
         if (!Q_isFull(&receive1Q)) {
             Q_enqueue(&receive1Q, UART1_D);
-            
+
             // If the queue has at least 3 bytes, then it can be received and packaged into a packet
             if (receive1Q.Size >= 3) {
                 osSemaphoreRelease(packetSemaphore);
@@ -283,9 +281,9 @@ void receiveEspTest(void) {
     if (result == PACKET_OK) {
         motor_t motor;
         parsePacket(&packet, &motor);
-        
-		// printMotor(&motor);
-		moveRobot(&motor);
+
+        // printMotor(&motor);
+        moveRobot(&motor);
     }
 }
 
@@ -305,7 +303,7 @@ void receive_packet_thread(void* argument) {
         if (count == 0) {
             result = PACKET_INCOMPLETE;
         } else {
-           result = deserialize(buffer, count, &packet);
+            result = deserialize(buffer, count, &packet);
         }
 
         if (result == PACKET_OK) {
@@ -318,13 +316,18 @@ void receive_packet_thread(void* argument) {
                 osMessageQueuePut(motorMsg, &motor, 0, 0);
             } else if (packet.command == 2) {
                 // Music toggle command
-                isMary = !isMary;
+                isMary = true;
+                initRgbLed();
+                onLed(RED);
+            } else if (packet.command == 3) {
+                isMary = false;
+                initRgbLed();
+                onLed(BLUE);
             } else {
                 isMoving = false;
                 stop();
             }
         }
-        
     }
 }
 
