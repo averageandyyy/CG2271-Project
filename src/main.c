@@ -1,8 +1,12 @@
 #include <stdio.h>
 
-#include "MKL25Z4.h"
+#include "RTE_Components.h"
+#include CMSIS_device_header
+
 #include "cirq/cirq.h"
+#include "cmsis_os2.h"
 #include "led/led.h"
+#include "lights/lights.h"
 #include "motors/motor_driver.h"
 #include "packet/packet.h"
 #include "serialize/serialize.h"
@@ -15,7 +19,6 @@
 #define UART1_RX_PIN 1  // PortE Pin 1
 #define UART1_TX_PIN 0  // PortE Pin 0
 #define UART1_INT_PRIO 128
-#define MASK(x) (1 << (x))
 
 Q_t transmit0Q, receive0Q;
 Q_t transmit1Q, receive1Q;
@@ -174,19 +177,19 @@ void controlLed(void) {
     }
 
     if (user_input_key == '1') {
-        initLeds();
+        initRgbLed();
         onLed(RED);
         transmit_data("Red ON\r\n", 9);
     } else if (user_input_key == '2') {
-        initLeds();
+        initRgbLed();
         onLed(GREEN);
         transmit_data("Green ON\r\n", 11);
     } else if (user_input_key == '3') {
-        initLeds();
+        initRgbLed();
         onLed(BLUE);
         transmit_data("Blue ON\r\n", 10);
     } else if (user_input_key == '0') {
-        initLeds();
+        initRgbLed();
         transmit_data("LEDs OFF\r\n", 11);
     }
 }
@@ -277,17 +280,33 @@ void receiveEspTest(void) {
     }
 }
 
+void initRtos() {
+    osKernelInitialize();
+    osThreadNew(green_lights_thread, NULL, NULL);
+    osKernelStart();
+}
+
 int main(void) {
     SystemCoreClockUpdate();
-
+    
+    // UART
     initIntUART0(BAUD_RATE);
     initIntUART1(BAUD_RATE);
-    // initRGBGPIO();
-    // initLeds();
-    
-    initMotors();
 
+
+    // RGB Led
+    initRGBGPIO();
+    initRgbLed();
+
+    // Light bars
+    initLEDGPIO();
+
+
+    // clear serial monitor screen
     printString("\033[0H\033[0J");
+
+    // initialise RTOS
+    initRtos();
 
     while (1) {
         // controlLed();

@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define MASK(x) (1 << (x))
+
 #define DELAY_DURATION 0x80000
 
 void delay(volatile uint32_t nof);

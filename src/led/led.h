@@ -23,5 +23,5 @@ void onLed(colour_t colour);
 
 void offLed(colour_t colour);
 
-void initLeds(void);
+void initRgbLed(void);
 #endif
