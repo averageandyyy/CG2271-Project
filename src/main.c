@@ -274,8 +274,9 @@ void receiveEspTest(void) {
     if (result == PACKET_OK) {
         motor_t motor;
         parsePacket(&packet, &motor);
-
-        printMotor(&motor);
+        
+		// printMotor(&motor);
+		moveRobot(&motor);
     }
 }
 
@@ -292,12 +293,14 @@ int main(void) {
     initIntUART0(BAUD_RATE);
     initIntUART1(BAUD_RATE);
 
+
     // RGB Led
     initRGBGPIO();
     initRgbLed();
 
     // Light bars
     initLEDGPIO();
+
 
     // clear serial monitor screen
     printString("\033[0H\033[0J");

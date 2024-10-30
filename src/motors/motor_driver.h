@@ -22,6 +22,11 @@
 #include "serialize/serialize.h"
 #include "utils/utils.h"
 
+#define LEFT_GREEN_FORWARD_PIN 0   // PortB 0; TPM1_CH0
+#define LEFT_BLUE_BACK_PIN 1       // PortB 1; TPM1_CH1
+#define RIGHT_GREEN_FORWARD_PIN 1  // PortA 1; TPM2_CH0
+#define RIGHT_BLUE_BACK_PIN 2      // PortA 2; TPM2_CH1
+
 typedef enum {
     FORWARD,
     BACKWARD
