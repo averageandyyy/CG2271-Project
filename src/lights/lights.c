@@ -72,7 +72,6 @@ void offAllLights(PortPin lights[], size_t size) {
 }
 
 
-
 PortPin greenLights[10] = {{PRTE, 20}, {PRTE, 21}, {PRTE, 22}, {PRTE, 23}, {PRTE, 29},
                            {PRTE, 30}, {PRTC, 6},  {PRTC, 5},  {PRTC, 4},  {PRTC, 3}};
 
@@ -83,6 +82,7 @@ bool isMoving = false;
 
 
 /* When moving, green lights need to be running
+*  When stationary, ALL green lights are to be on
 */
 void green_lights_thread(void *argument) {
     for (;;) {
@@ -121,4 +121,10 @@ void red_light_thread(void *argument) {
         }
         offLight(redLight);
     }
+}
+
+void initLightsRTOS() {
+    // Initialize the function threads
+    osThreadNew(green_lights_thread, NULL, NULL);
+    osThreadNew(red_light_thread, NULL, NULL);
 }

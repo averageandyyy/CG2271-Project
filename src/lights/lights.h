@@ -37,4 +37,6 @@ extern bool isMoving;
 
 void green_lights_thread(void *argument);
 void red_light_thread(void *argument);
+
+void initLightsRTOS();
 #endif
