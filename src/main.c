@@ -2,9 +2,10 @@
 
 #include "RTE_Components.h"
 #include CMSIS_device_header
+#include "cmsis_os2.h"
+#include "MKL25Z4.h"
 
 #include "cirq/cirq.h"
-#include "cmsis_os2.h"
 #include "led/led.h"
 #include "lights/lights.h"
 #include "motors/motor_driver.h"

@@ -119,7 +119,7 @@ void moveLeftSide(Direction dir, unsigned char speed) {
 }
 
 void moveRobot(motor_t* settings) {
-    if (setting->lSpeed != 0 || setting->rSpeed != 0) {
+    if (settings->lSpeed != 0 || settings->rSpeed != 0) {
         isMoving = true;
     } else {
         isMoving = false;
@@ -137,11 +137,11 @@ void motor_control_thread(void* argument) {
     for (;;) {
         // Get motor message from queue, blocks and allows other threads to run if no message is received
         osMessageQueueGet(motorMsg, &myMotor, NULL, osWaitForever);
-        moveRobot(&myMotor)
+        moveRobot(&myMotor);
     }
 }
 
-void initMotorControlRTOS() {
+void initMotorControlRTOS(void) {
     // Initialize motor message queue
     motorMsg = osMessageQueueNew(MSG_COUNT, sizeof(motor_t), NULL);
     // Initialize motor control thread

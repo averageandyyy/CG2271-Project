@@ -2,7 +2,7 @@
 
 int mary[27] = {
     E, D, C, D, E, E, E, D, D, D, D, E, G, G, E, D, C, D, E, E, E, C, D, D, E, D, C
-}
+};
 
 int birthday[25] = {
     G4, G4, A4, G4, C5, B4,  

@@ -87,7 +87,7 @@ void moveLeftSide(Direction dir, unsigned char speed);
 
 extern osMessageQueueId_t motorMsg;
 
-void initMotorControlRTOS();
+void initMotorControlRTOS(void);
 void motor_control_thread(void* argument);
 
 #endif

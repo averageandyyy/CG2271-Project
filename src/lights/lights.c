@@ -123,7 +123,7 @@ void red_light_thread(void *argument) {
     }
 }
 
-void initLightsRTOS() {
+void initLightsRTOS(void) {
     // Initialize the function threads
     osThreadNew(green_lights_thread, NULL, NULL);
     osThreadNew(red_light_thread, NULL, NULL);
