@@ -131,6 +131,8 @@ void UART0_IRQHandler() {
     NVIC_EnableIRQ(UART0_IRQn);
 }
 
+
+osSemaphoreId_t packetSemaphore;
 void UART1_IRQHandler() {
     NVIC_ClearPendingIRQ(UART1_IRQn);
     NVIC_DisableIRQ(UART1_IRQn);
@@ -146,6 +148,11 @@ void UART1_IRQHandler() {
     if (UART1_S1 & UART_S1_RDRF_MASK) {
         if (!Q_isFull(&receive1Q)) {
             Q_enqueue(&receive1Q, UART1_D);
+            
+            // If the queue has at least 3 bytes, then it can be received and packaged into a packet
+            if (receive1Q.Size >= 3) {
+                osSemaphoreRelease(packetSemaphore);
+            }
         } else {
             // remove oldest packet and add new packet
             for (int i = 0; i < PACKET_SIZE; i++) {
@@ -280,33 +287,81 @@ void receiveEspTest(void) {
     }
 }
 
-void initRtos() {
+void receive_packet_thread(void* argument) {
+    for (;;) {
+        // Wait until there is at least 3 bytes worth of data to be received
+        osSemaphoreAcquire(packetSemaphore, osWaitForever);
+        char buffer[PACKET_SIZE] = {};
+        int count = 0;
+
+        while (!Q_isEmpty(&receive1Q) && count < PACKET_SIZE) {
+            buffer[count++] = Q_dequeue(&receive1Q);
+        }
+
+        packet_t packet;
+        result_t result;
+        if (count == 0) {
+            result = PACKET_INCOMPLETE;
+        } else {
+           result = deserialize(buffer, count, &packet);
+        }
+
+        if (result == PACKET_OK) {
+            // Movement command
+            if (packet.command == 0) {
+                motor_t motor;
+                parsePacket(&packet, &motor);
+
+                // Move motor message into queue
+                osMessageQueuePut(motorMsg, &motor, NULL, 0);
+            } else {
+                // Music toggle command
+            }
+        }
+        
+    }
+}
+
+void initPacketThreadRTOS() {
+    // Semaphore is release by the ISR when there is at least 3 bytes of data to be read and packaged
+    // Semaphore is acquired by receive_packet_thread to parse the packet and is used to direct motors or toggle music
+    packetSemaphore = osSemaphoreNew(1, 0, NULL);
+    osThreadNew(receive_packet_thread, NULL, NULL);
+}
+
+void initRTOS() {
     osKernelInitialize();
-    osThreadNew(green_lights_thread, NULL, NULL);
+    initPacketThreadRTOS();
+    initLightsRTOS();
+    initMotorControlRTOS();
     osKernelStart();
 }
 
-int main(void) {
-    SystemCoreClockUpdate();
-    
+void initHardware() {
     // UART
     initIntUART0(BAUD_RATE);
     initIntUART1(BAUD_RATE);
 
-
-    // RGB Led
+    // On Board RGB Led
     initRGBGPIO();
     initRgbLed();
 
-    // Light bars
+    // 10-segment LEDs
     initLEDGPIO();
 
+    // Motors
+    initMotors();
+}
 
+int main(void) {
+    SystemCoreClockUpdate();
+
+    initHardware();
     // clear serial monitor screen
     printString("\033[0H\033[0J");
 
     // initialise RTOS
-    initRtos();
+    initRTOS();
 
     while (1) {
         // controlLed();
