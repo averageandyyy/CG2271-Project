@@ -1,7 +1,7 @@
 #include "music/music.h"
 
 int mary[27] = {
-    E, D, C, D, E, E, E, D, D, D, D, E, G, G, E, D, C, D, E, E, E, C, D, D, E, D, C
+    E, D_NOTE, C, D_NOTE, E, E, E, D_NOTE, D_NOTE, D_NOTE, D_NOTE, E, G, G, E, D_NOTE, C, D_NOTE, E, E, E, C, D_NOTE, D_NOTE, E, D_NOTE, C
 };
 
 int birthday[25] = {

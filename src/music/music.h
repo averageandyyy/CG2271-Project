@@ -15,7 +15,7 @@
 
 #define MUSIC_PIN 31
 #define C 1431
-#define D 1275
+#define D_NOTE 1275
 #define E 1136
 #define F 1074
 #define G 956
