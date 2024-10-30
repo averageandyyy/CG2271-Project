@@ -59,6 +59,20 @@ void offLight(PortPin portPin) {
     }
 }
 
+void onAllLights(PortPin lights[], size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        onLight(lights[i]);
+    }
+}
+
+void offAllLights(PortPin lights[], size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        offLight(lights[i]);
+    }
+}
+
+
+
 PortPin greenLights[10] = {{PRTE, 20}, {PRTE, 21}, {PRTE, 22}, {PRTE, 23}, {PRTE, 29},
                            {PRTE, 30}, {PRTC, 6},  {PRTC, 5},  {PRTC, 4},  {PRTC, 3}};
 
@@ -66,24 +80,45 @@ PortPin redLight = {PRTC, 0};
 
 bool isMoving = false;
 
+
+
+/* When moving, green lights need to be running
+*/
 void green_lights_thread(void *argument) {
     for (;;) {
-        for (int i = 0; i < 10; i++) {
-            if (i == 0) {
-                offLight(greenLights[9]);
+        // if the vehicle is moving,
+        if (isMoving) {
+            // off all lights first before running them
+            offAllLights(greenLights, 10);
+            // Running light loop
+            for (int i = 0; i < 10 && isMoving; i++) {
+                if (i == 0) {
+                    offLight(greenLights[9]);
+                } else {
+                    offLight(greenLights[i - 1]);
+                }
                 onLight(greenLights[i]);
-            } else {
-                // Off the previous light
-                offLight(greenLights[i - 1]);
-                onLight(greenLights[i]);
-            }
-
-            // To test and confirm
-            if (isMoving) {
                 osDelay(250);
-            } else {
-                osDelay(500);
             }
+        } else {
+            // otherwise turn all off them on
+            onAllLights(greenLights, 10);
         }
+    }
+}
+
+/*
+* When moving, ALL red lights will blink for 500ms
+* When stationery, ALL red lights will blink for 250ms
+*/
+void red_light_thread(void *argument) {
+    for (;;) {
+        onLight(redLight);
+        if (isMoving) {
+            osDelay(500);
+        } else {
+            osDelay(250);
+        }
+        offLight(redLight);
     }
 }

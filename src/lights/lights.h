@@ -27,6 +27,9 @@ void offCLight(uint8_t id);
 void onLight(PortPin portPin);
 void offLight(PortPin portPin);
 
+void onAllLights(PortPin lights[], size_t size);
+void offAllLights(PortPin lights[], size_t size);
+
 extern PortPin greenLights[10];
 extern PortPin redLights;
 
