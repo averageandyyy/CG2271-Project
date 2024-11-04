@@ -2,6 +2,8 @@
 
 #define RXD2 16
 #define TXD2 17
+#define X_BUTTON 0x0001
+#define O_BUTTON 0x0002
 
 typedef struct {
   unsigned char x;
@@ -86,18 +88,18 @@ void processGamepad(ControllerPtr ctl) {
   packet_t packet = {0, 0, 0};
 
   //== PS4 X button = 0x0001 ==//
-  if (ctl->buttons() == 0x0001) {
+  if (ctl->buttons() == X_BUTTON) {
     // code for when X button is pushed
     packet.command = 2;
     Serial.println("X pressed");
     Serial2.write((uint8_t*)&packet, sizeof(packet));
-  } else if (ctl->buttons() == 0x0002) {
+  } else if (ctl->buttons() == O_BUTTON) {
     packet.command = 3;
     Serial.println("O pressed");
     Serial2.write((uint8_t*)&packet, sizeof(packet));
   } else {
     //== LEFT JOYSTICK DEADZONE ==//
-    if (ctl->axisY() > -60 && ctl->axisY() < 60 && ctl->axisX() > -60 && ctl->axisX() < 60) {
+    if (ctl->axisY() > -60 && ctl->axisY() < 60 && ctl->axisRX() > -60 && ctl->axisRX() < 60) {
       // code for when left joystick is at idle
       Serial.print("Idle: ");
       packet.command = 0;
@@ -106,7 +108,7 @@ void processGamepad(ControllerPtr ctl) {
       packet.command = 1;
     }
 
-    sendX = ((ctl->axisX() + 511) >> 2);
+    sendX = ((ctl->axisRX() + 511) >> 2);
     sendY = ((ctl->axisY() + 511) >> 2);
     Serial.print("X: ");
     Serial.print(sendX);
