@@ -27,18 +27,20 @@
 // For global isMoving variable
 #include "lights/lights.h"
 
-#define LEFT_GREEN_FORWARD_PIN 0   // PortB 0; TPM1_CH0
-#define LEFT_BLUE_BACK_PIN 1       // PortB 1; TPM1_CH1
-#define RIGHT_GREEN_FORWARD_PIN 1  // PortA 1; TPM2_CH0
-#define RIGHT_BLUE_BACK_PIN 2      // PortA 2; TPM2_CH1
+#define LEFT_GREEN_FORWARD_PIN 0  // PortB 0; TPM1_CH0
+#define LEFT_BLUE_BACK_PIN 1      // PortB 1; TPM1_CH1
+#define RIGHT_GREEN_FORWARD_PIN 1 // PortA 1; TPM2_CH0
+#define RIGHT_BLUE_BACK_PIN 2     // PortA 2; TPM2_CH1
 #define MSG_COUNT 10
 
-typedef enum {
+typedef enum
+{
     FORWARD,
     BACKWARD
 } Direction;
 
-typedef struct motor_t {
+typedef struct motor_t
+{
     Direction lDir;
     unsigned char lSpeed;
     Direction rDir;
@@ -79,15 +81,15 @@ void initMotorTimers(void);
  */
 void stop(void);
 
-void parsePacket(packet_t* packet, motor_t* settings);
+void parsePacket(packet_t *packet, motor_t *settings);
 
-void moveRobot(motor_t* motor_settings);
+void moveRobot(motor_t *motor_settings);
 void moveRightSide(Direction dir, unsigned char speed);
 void moveLeftSide(Direction dir, unsigned char speed);
 
 extern osMessageQueueId_t motorMsg;
 
 void initMotorControlRTOS(void);
-void motor_control_thread(void* argument);
+void motor_control_thread(void *argument);
 
 #endif

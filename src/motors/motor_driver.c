@@ -121,6 +121,7 @@ void moveLeftSide(Direction dir, unsigned char speed) {
 void moveRobot(motor_t* settings) {
     moveLeftSide(settings->lDir, settings->lSpeed);
     moveRightSide(settings->rDir, settings->rSpeed);
+		// stop();
 }
 
 osMessageQueueId_t motorMsg;
