@@ -169,8 +169,8 @@ void loop() {
   if (dataUpdated) {
     processControllers();
   } else {
-    // packet_t packet = {0, 0, 0};
-    // Serial2.write((uint8_t*)&packet, sizeof(packet));
+    packet_t packet = {0, 0, 0};
+    Serial2.write((uint8_t*)&packet, sizeof(packet));
   }
 
   // The main loop must have some kind of "yield to lower priority task" event.
@@ -180,5 +180,5 @@ void loop() {
   // https://stackoverflow.com/questions/66278271/task-watchdog-got-triggered-the-tasks-did-not-reset-the-watchdog-in-time
 
   // vTaskDelay(1);
-  delay(25);
+  delay(50);
 }
